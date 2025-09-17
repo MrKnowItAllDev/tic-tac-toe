@@ -40,3 +40,28 @@
 .grid-item:hover {
     cursor: pointer;
 }
+
+.announce {
+    padding: 12px;
+    font-size: 18px;
+}
+
+.btn-section {
+    padding: 12px;
+}
+
+.btn-reset {
+    border: none;
+    border-radius: 4px;
+    padding: 10px 10px;
+    width: 100px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 20px;
+    background-color: #1e81ff;
+}
+
+.btn-reset:hover {
+    cursor: pointer;
+    background-color: #0074ff;
+}

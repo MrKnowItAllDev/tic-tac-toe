@@ -1,5 +1,15 @@
 'use strict';
 
+/*
+*  NOTE, if you're looking at this code, you'll find some unused data/variables, such as
+*  player score, and methods such as increment score and get score, and probably a few others,
+*  these are all useless.
+*
+*  You might also notice that I didn't exactly plan out any structure or system,
+*   my code is a mess, I kinda just figured stuff out as I was coding, BAD idea
+*   DO NOT do that.
+* */
+
 const gameBoard = (() => {
     let board = Array(9).fill(null);
 
@@ -72,6 +82,7 @@ function gameController() {
             uiInfo['invalid'] = `Please select a valid position`;
             return;
         }
+        if (board.isTaken(pos)) uiInfo['isTaken'] = `Position ${pos + 1} is taken`;
         if (!board.getWinner(player1.getMove()) && !board.getWinner(player2.getMove()))
             if (!board.isTaken(pos) && validPos(pos)) {
                 board.placeMove(activePlayer.getMove(), pos);
@@ -84,12 +95,13 @@ function gameController() {
         }
     }
 
-    return { playGame, getActivePlayer, board, getBoard, getTie, uiInfo }
+    return { playGame, getActivePlayer, board, getBoard, getTie, uiInfo, switchPlayer }
 }
 
 function displayController() {
     const game = gameController();
     const board = game.getBoard();
+    let running = true;
 
     const grid = document.querySelector('#grid');
     const player1 = document.querySelector('.player-1');
@@ -103,13 +115,21 @@ function displayController() {
     }
 
     const reset = () => {
+        running = true;
+        if (game.getActivePlayer().getMove() === 'O') {
+            game.switchPlayer();
+        }
         playerOutput.textContent = ``;
         player1.textContent = `Player 1: `;
         player2.textContent = `Player 2: `;
         const cells = document.querySelectorAll('.grid-item');
-        cells.forEach((cell) => {
+        cells.forEach((cell, i) => {
             cell.textContent = ``;
+            board[i] = null;
         });
+        if (game.uiInfo['winner']) {
+            delete game.uiInfo['winner'];
+        }
     }
 
     const gameRules = (event, pos) => {
@@ -120,16 +140,30 @@ function displayController() {
     }
 
     const playRound = () => {
+        const p1 = document.querySelector('.player-1');
+        const p2 = document.querySelector('.player-2');
         const cells = document.querySelectorAll('.grid-item');
         cells.forEach((cell, i) => {
             cell.addEventListener('click', (e) => {
-                gameRules(e, i);
-                if (game.uiInfo['winner']) {
+                if (game.board.isTaken(i) && running) {
+                    document.querySelector('.announce').textContent = `Position ${(i + 1)} is taken`;
+                    setTimeout(() => {
+                        document.querySelector('.announce').textContent = ``;
+                    }, 2000);
+                } else {
+                    gameRules(e, i);
                     let player = game.uiInfo['winner'];
-                    player.incScore();
-                    document.querySelector('.announce').textContent = `${player.getName()} Wins!`;
-                    document.querySelector('.player-1').textContent = `Player 1: ${player.getScore()}`;
+                    if (game.uiInfo['winner'] && running) {
+                        document.querySelector('.announce').textContent = `${player.getName()} Wins!`;
+                        if (player.getName() === 'Player 1') p1.textContent = `Player 1: ${player.getScore()}`;
+                        else p2.textContent = `Player 2: ${player.getScore()}`;
+                        running = false;
+                    }
                 }
+            });
+            document.querySelector('.btn-reset').addEventListener('click',
+                () => {
+                reset();
             });
         });
     }
