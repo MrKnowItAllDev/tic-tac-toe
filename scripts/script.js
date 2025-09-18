@@ -25,11 +25,11 @@ const gameBoard = (() => {
             [1, 4, 7], [2, 4, 6], [3, 4, 5], [6, 7, 8], [2, 5, 8]
         ];
 
-        return wPositions.map((arr) => {
-            return arr.filter((pos) => {
+        return wPositions.some((arr) => {
+            return arr.every((pos) => {
                 return board[pos] === move;
             })
-        }).filter((a) => a.length === 3)[0];
+        });
     }
 
     const getTie = () => {
@@ -128,7 +128,9 @@ function displayController() {
             board[i] = null;
         });
         if (game.uiInfo['winner']) {
-            delete game.uiInfo['winner'];
+            Object.keys(game.uiInfo).forEach((key) => {
+                game.uiInfo[key] = null;
+            });
         }
     }
 
@@ -145,7 +147,8 @@ function displayController() {
         const cells = document.querySelectorAll('.grid-item');
         cells.forEach((cell, i) => {
             cell.addEventListener('click', (e) => {
-                if (game.board.isTaken(i) && running) {
+                if(!running) return;
+                if (game.board.isTaken(i)) {
                     document.querySelector('.announce').textContent = `Position ${(i + 1)} is taken`;
                     setTimeout(() => {
                         document.querySelector('.announce').textContent = ``;
@@ -153,7 +156,7 @@ function displayController() {
                 } else {
                     gameRules(e, i);
                     let player = game.uiInfo['winner'];
-                    if (game.uiInfo['winner'] && running) {
+                    if (game.uiInfo['winner']) {
                         document.querySelector('.announce').textContent = `${player.getName()} Wins!`;
                         if (player.getName() === 'Player 1') p1.textContent = `Player 1: ${player.getScore()}`;
                         else p2.textContent = `Player 2: ${player.getScore()}`;
@@ -161,10 +164,10 @@ function displayController() {
                     }
                 }
             });
-            document.querySelector('.btn-reset').addEventListener('click',
-                () => {
+        });
+        document.querySelector('.btn-reset').addEventListener('click',
+            () => {
                 reset();
-            });
         });
     }
     return { playRound }
@@ -172,3 +175,4 @@ function displayController() {
 
 const main = displayController();
 main.playRound();
+
